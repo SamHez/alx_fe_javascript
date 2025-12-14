@@ -17,6 +17,7 @@
     select, input, button {
       margin: 5px 0;
       padding: 6px;
+      display: block;
     }
   </style>
 </head>
@@ -28,12 +29,17 @@
   <select id="categorySelect"></select>
 
   <!-- Quote Display -->
-  <div id="quoteDisplay">Select a category and click "Show New Quote"</div>
+  <div id="quoteDisplay"></div>
 
-  <!-- Show Quote Button -->
   <button id="newQuote">Show New Quote</button>
 
-  <!-- Dynamic Form Container -->
+  <!-- JSON Export -->
+  <button id="exportQuotes">Export Quotes (JSON)</button>
+
+  <!-- JSON Import -->
+  <input type="file" id="importFile" accept=".json" />
+
+  <!-- Dynamic Form -->
   <div id="formContainer"></div>
 
   <script src="script.js"></script>
