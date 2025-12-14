@@ -2,15 +2,14 @@
  * STORAGE KEYS
  *************************/
 const QUOTES_KEY = "quotesData";
-const FILTER_KEY = "lastCategoryFilter";
-const LAST_VIEWED_QUOTE_KEY = "lastViewedQuote";
+const FILTER_KEY = "selectedCategory";
 
 /*************************
  * LOAD & SAVE
  *************************/
 function loadQuotes() {
-  const data = localStorage.getItem(QUOTES_KEY);
-  return data ? JSON.parse(data) : [
+  const stored = localStorage.getItem(QUOTES_KEY);
+  return stored ? JSON.parse(stored) : [
     { text: "The best way to predict the future is to invent it.", category: "Technology" },
     { text: "Life is what happens when you're busy making other plans.", category: "Life" },
     { text: "Do or do not. There is no try.", category: "Motivation" }
@@ -30,50 +29,54 @@ let quotes = loadQuotes();
  * DOM REFERENCES
  *************************/
 const quoteDisplay = document.getElementById("quoteDisplay");
-const quoteList = document.getElementById("quoteList");
 const categoryFilter = document.getElementById("categoryFilter");
 const newQuoteButton = document.getElementById("newQuote");
 
 /*************************
- * CATEGORY HANDLING
+ * POPULATE CATEGORIES
  *************************/
 function populateCategories() {
   const categories = ["all", ...new Set(quotes.map(q => q.category))];
   categoryFilter.innerHTML = "";
 
-  categories.forEach(cat => {
+  categories.forEach(category => {
     const option = document.createElement("option");
-    option.value = cat;
-    option.textContent = cat;
+    option.value = category;
+    option.textContent = category;
     categoryFilter.appendChild(option);
   });
 }
 
 /*************************
- * DISPLAY QUOTES
- *************************/
-function displayQuotes(list) {
-  quoteList.innerHTML = "";
-
-  list.forEach(q => {
-    const div = document.createElement("div");
-    div.textContent = `"${q.text}" — ${q.category}`;
-    quoteList.appendChild(div);
-  });
-}
-
-/*************************
- * FILTER LOGIC
+ * FILTER + DISPLAY LOGIC
  *************************/
 function filterQuotes() {
-  const selected = categoryFilter.value;
-  localStorage.setItem(FILTER_KEY, selected);
+  const selectedCategory = categoryFilter.value;
 
-  const filtered = selected === "all"
-    ? quotes
-    : quotes.filter(q => q.category === selected);
+  //  Save selected category
+  localStorage.setItem(FILTER_KEY, selectedCategory);
 
-  displayQuotes(filtered);
+  let filteredQuotes = quotes;
+
+  if (selectedCategory !== "all") {
+    filteredQuotes = quotes.filter(
+      quote => quote.category === selectedCategory
+    );
+  }
+
+  //  Update displayed quotes
+  quoteDisplay.innerHTML = "";
+
+  if (filteredQuotes.length === 0) {
+    quoteDisplay.textContent = "No quotes available for this category.";
+    return;
+  }
+
+  filteredQuotes.forEach(quote => {
+    const p = document.createElement("p");
+    p.textContent = `"${quote.text}" — ${quote.category}`;
+    quoteDisplay.appendChild(p);
+  });
 }
 
 /*************************
@@ -81,22 +84,19 @@ function filterQuotes() {
  *************************/
 function showRandomQuote() {
   if (!quotes.length) return;
-
-  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-  quoteDisplay.textContent = `"${randomQuote.text}"`;
-
-  sessionStorage.setItem(LAST_VIEWED_QUOTE_KEY, JSON.stringify(randomQuote));
+  const random = quotes[Math.floor(Math.random() * quotes.length)];
+  quoteDisplay.textContent = `"${random.text}" — ${random.category}`;
 }
 
 /*************************
- * createAddQuoteForm
+ * ADD QUOTE FORM (REQUIRED)
  *************************/
 function createAddQuoteForm() {
-  const form = document.createElement("div");
+  const container = document.createElement("div");
 
-  const textInput = document.createElement("input");
-  textInput.id = "newQuoteText";
-  textInput.placeholder = "Enter a new quote";
+  const quoteInput = document.createElement("input");
+  quoteInput.id = "newQuoteText";
+  quoteInput.placeholder = "Enter a new quote";
 
   const categoryInput = document.createElement("input");
   categoryInput.id = "newQuoteCategory";
@@ -106,29 +106,26 @@ function createAddQuoteForm() {
   button.textContent = "Add Quote";
   button.addEventListener("click", addQuote);
 
-  form.appendChild(textInput);
-  form.appendChild(categoryInput);
-  form.appendChild(button);
+  container.appendChild(quoteInput);
+  container.appendChild(categoryInput);
+  container.appendChild(button);
 
-  document.body.appendChild(form);
+  document.body.appendChild(container);
 }
 
 /*************************
- * addQuote
+ * ADD QUOTE LOGIC
  *************************/
 function addQuote() {
   const text = document.getElementById("newQuoteText").value.trim();
   const category = document.getElementById("newQuoteCategory").value.trim();
 
   if (!text || !category) {
-    alert("Please enter both quote and category");
+    alert("Please enter both text and category.");
     return;
   }
 
-  //  Logic to add quote
   quotes.push({ text, category });
-
-  //  Update storage + DOM
   saveQuotes();
   populateCategories();
   filterQuotes();
@@ -138,18 +135,23 @@ function addQuote() {
 }
 
 /*************************
- *  EVENT LISTENER CHECK
- * “Show New Quote” Button
+ * EVENT LISTENERS
  *************************/
+categoryFilter.addEventListener("change", filterQuotes);
 newQuoteButton.addEventListener("click", showRandomQuote);
 
 /*************************
- * INITIALIZATION
+ * RESTORE LAST FILTER
  *************************/
 populateCategories();
+
+const savedCategory = localStorage.getItem(FILTER_KEY);
+if (savedCategory) {
+  categoryFilter.value = savedCategory;
+}
+
+/*************************
+ * INITIALIZE
+ *************************/
 createAddQuoteForm();
-
-const lastFilter = localStorage.getItem(FILTER_KEY);
-if (lastFilter) categoryFilter.value = lastFilter;
-
 filterQuotes();
