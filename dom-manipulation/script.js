@@ -17,7 +17,8 @@ function loadQuotes() {
   const stored = localStorage.getItem(QUOTES_KEY);
   return stored ? JSON.parse(stored) : [
     { text: "The best way to predict the future is to invent it.", category: "Technology" },
-    { text: "Life is what happens when you're busy making other plans.", category: "Life" }
+    { text: "Life is what happens when you're busy making other plans.", category: "Life" },
+    { text: "Do or do not. There is no try.", category: "Motivation" }
   ];
 }
 
@@ -47,9 +48,12 @@ syncNotice.style.padding = "10px";
 syncNotice.style.marginTop = "10px";
 syncNotice.style.border = "1px solid #ccc";
 syncNotice.style.backgroundColor = "#f0f8ff";
-
 syncNotice.textContent = "Quotes synced with server!";
 document.body.appendChild(syncNotice);
+
+function acknowledgeSync() {
+  syncNotice.style.display = "none";
+}
 
 /*************************
  * POPULATE CATEGORIES
@@ -96,26 +100,61 @@ function showRandomQuote() {
 }
 
 /*************************
- * ADD QUOTE
+ * ✅ CREATE ADD-QUOTE FORM
+ *************************/
+function createAddQuoteForm() {
+  const container = document.createElement("div");
+
+  const quoteInput = document.createElement("input");
+  quoteInput.id = "newQuoteText";
+  quoteInput.placeholder = "Enter a new quote";
+
+  const categoryInput = document.createElement("input");
+  categoryInput.id = "newQuoteCategory";
+  categoryInput.placeholder = "Enter quote category";
+
+  const button = document.createElement("button");
+  button.textContent = "Add Quote";
+  button.addEventListener("click", addQuote);
+
+  container.appendChild(quoteInput);
+  container.appendChild(categoryInput);
+  container.appendChild(button);
+
+  document.body.appendChild(container);
+}
+
+/*************************
+ * ✅ ADD QUOTE FUNCTION
  *************************/
 function addQuote() {
   const text = document.getElementById("newQuoteText").value.trim();
   const category = document.getElementById("newQuoteCategory").value.trim();
 
-  if (!text || !category) return alert("Missing fields");
+  if (!text || !category) {
+    alert("Please enter both text and category.");
+    return;
+  }
 
+  // Add to quotes array
   const newQuote = { text, category };
   quotes.push(newQuote);
+
+  // Update storage and DOM
   saveQuotes();
   populateCategories();
   filterQuotes();
 
-  // 🔹 POST new quote to server
+  // Clear inputs
+  document.getElementById("newQuoteText").value = "";
+  document.getElementById("newQuoteCategory").value = "";
+
+  // POST to server
   postQuoteToServer(newQuote);
 }
 
 /*************************
- * POST TO SERVER (REQUIRED)
+ * POST TO SERVER
  *************************/
 function postQuoteToServer(quote) {
   fetch(SERVER_API, {
@@ -125,54 +164,38 @@ function postQuoteToServer(quote) {
     },
     body: JSON.stringify(quote)
   })
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => console.log("Posted to server:", data));
 }
 
 /*************************
- * FETCH FROM SERVER
+ * FETCH & SYNC FROM SERVER
  *************************/
 async function fetchQuotesFromServer() {
-  const response = await fetch(SERVER_API);
-  const data = await response.json();
-
+  const res = await fetch(SERVER_API);
+  const data = await res.json();
   return data.slice(0, 5).map(item => ({
     text: item.title,
     category: "Server"
   }));
 }
 
-/*************************
- * SYNC + CONFLICT RESOLUTION
- *************************/
 async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   const localMap = new Map(quotes.map(q => [q.text, q]));
 
-  let conflictDetected = false;
-
-  serverQuotes.forEach(serverQuote => {
-    if (localMap.has(serverQuote.text)) {
-      conflictDetected = true;
-    }
+  serverQuotes.forEach(sq => {
     // SERVER WINS
-    localMap.set(serverQuote.text, serverQuote);
+    localMap.set(sq.text, sq);
   });
 
   quotes = Array.from(localMap.values());
   saveQuotes();
   populateCategories();
   filterQuotes();
-  localStorage.setItem(LAST_SYNC_KEY, Date.now());
-
-  // Show notification whenever sync occurs
   syncNotice.style.display = "block";
-
-  function acknowledgeSync() {
-  syncNotice.style.display = "none";
+  localStorage.setItem(LAST_SYNC_KEY, Date.now());
 }
-}
-
 
 /*************************
  * EVENT LISTENERS
@@ -181,17 +204,17 @@ categoryFilter.addEventListener("change", filterQuotes);
 newQuoteButton.addEventListener("click", showRandomQuote);
 
 /*************************
- * INITIALIZATION
+ * INITIALIZE
  *************************/
 populateCategories();
+createAddQuoteForm();
 
+// Restore last selected category
 const savedCategory = localStorage.getItem(FILTER_KEY);
 if (savedCategory) categoryFilter.value = savedCategory;
 
 filterQuotes();
 
-/*************************
- * PERIODIC SERVER CHECK
- *************************/
+// Periodic server sync every 30s
 syncQuotes();
 setInterval(syncQuotes, 30000);
