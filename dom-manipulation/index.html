@@ -48,8 +48,12 @@
 
   <!-- JSON EXPORT / IMPORT -->
   <h3>Import / Export Quotes</h3>
-  <button onclick="exportQuotes()">Export Quotes (JSON)</button>
-  <input type="file" accept=".json" onchange="importFromJsonFile(event)" />
+
+<!-- Export -->
+<button onclick="exportToJsonFile()">Export Quotes (JSON)</button>
+
+<!-- Import -->
+<input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
 
   <!-- SERVER SYNC STATUS -->
   <div id="syncStatus">
