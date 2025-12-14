@@ -43,7 +43,12 @@ const newQuoteButton = document.getElementById("newQuote");
 const syncNotice = document.createElement("div");
 syncNotice.id = "syncNotice";
 syncNotice.style.display = "none";
-syncNotice.textContent = "Quotes updated from server.";
+syncNotice.style.padding = "10px";
+syncNotice.style.marginTop = "10px";
+syncNotice.style.border = "1px solid #ccc";
+syncNotice.style.backgroundColor = "#f0f8ff";
+
+syncNotice.textContent = "Quotes synced with server!";
 document.body.appendChild(syncNotice);
 
 /*************************
@@ -158,13 +163,16 @@ async function syncQuotes() {
   saveQuotes();
   populateCategories();
   filterQuotes();
-
   localStorage.setItem(LAST_SYNC_KEY, Date.now());
 
-  if (conflictDetected) {
-    syncNotice.style.display = "block";
-  }
+  // Show notification whenever sync occurs
+  syncNotice.style.display = "block";
+
+  function acknowledgeSync() {
+  syncNotice.style.display = "none";
 }
+}
+
 
 /*************************
  * EVENT LISTENERS
