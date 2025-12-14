@@ -2,35 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dynamic Quote Generator</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    .quote { margin: 8px 0; font-style: italic; }
-    .notice {
-      background: #f0f8ff;
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-top: 10px;
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
     }
-    button { margin-top: 5px; }
+    .quote {
+      margin: 8px 0;
+      font-style: italic;
+    }
+    select, input, button {
+      display: block;
+      margin: 6px 0;
+      padding: 6px;
+    }
+    #syncStatus {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background: #f0f8ff;
+    }
   </style>
 </head>
 <body>
 
   <h1>Dynamic Quote Generator</h1>
 
+  <!-- CATEGORY FILTER -->
+  <label>Filter by Category</label>
   <select id="categoryFilter"></select>
+
+  <!-- QUOTES DISPLAY -->
   <div id="quoteList"></div>
 
-  <h3>Add Quote</h3>
-  <input id="newQuoteText" placeholder="Quote text" />
-  <input id="newQuoteCategory" placeholder="Category" />
+  <button id="newQuoteBtn">Show Random Quote</button>
+
+  <!-- ADD QUOTE -->
+  <h3>Add a New Quote</h3>
+  <input id="newQuoteText" placeholder="Enter quote text" />
+  <input id="newQuoteCategory" placeholder="Enter quote category" />
   <button onclick="addQuote()">Add Quote</button>
 
-  <!-- Sync Notification -->
-  <div id="syncNotice" class="notice" style="display:none;">
-    Server data updated. Conflicts resolved.
-    <button onclick="manualResolve()">View Changes</button>
+  <!-- JSON EXPORT / IMPORT -->
+  <h3>Import / Export Quotes</h3>
+  <button onclick="exportQuotes()">Export Quotes (JSON)</button>
+  <input type="file" accept=".json" onchange="importFromJsonFile(event)" />
+
+  <!-- SERVER SYNC STATUS -->
+  <div id="syncStatus">
+    Server data synced. Conflicts resolved (server wins).
+    <button onclick="acknowledgeSync()">OK</button>
   </div>
 
   <script src="script.js"></script>
