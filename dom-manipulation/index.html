@@ -9,15 +9,17 @@
       font-family: Arial, sans-serif;
       padding: 20px;
     }
-    #quoteDisplay {
-      margin: 20px 0;
-      font-size: 1.2rem;
+    #quoteList {
+      margin-top: 20px;
+    }
+    .quote {
+      margin-bottom: 10px;
       font-style: italic;
     }
     select, input, button {
+      display: block;
       margin: 5px 0;
       padding: 6px;
-      display: block;
     }
   </style>
 </head>
@@ -25,22 +27,20 @@
 
   <h1>Dynamic Quote Generator</h1>
 
-  <!-- Category Selector -->
-  <select id="categorySelect"></select>
+  <!-- Category Filter -->
+  <label for="categoryFilter">Filter by Category:</label>
+  <select id="categoryFilter" onchange="filterQuotes()">
+    <option value="all">All Categories</option>
+  </select>
 
-  <!-- Quote Display -->
-  <div id="quoteDisplay"></div>
+  <!-- Quotes Display -->
+  <div id="quoteList"></div>
 
-  <button id="newQuote">Show New Quote</button>
-
-  <!-- JSON Export -->
-  <button id="exportQuotes">Export Quotes (JSON)</button>
-
-  <!-- JSON Import -->
-  <input type="file" id="importFile" accept=".json" />
-
-  <!-- Dynamic Form -->
-  <div id="formContainer"></div>
+  <!-- Add Quote Form -->
+  <h3>Add a New Quote</h3>
+  <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+  <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+  <button onclick="addQuote()">Add Quote</button>
 
   <script src="script.js"></script>
 </body>
